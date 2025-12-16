@@ -15,7 +15,7 @@
   // Main body.
   set par(justify: true)
   // set text(size:0.92em)
-  set text(size: 1em)
+  set text(size: 0.8em)
 
   // Display title, author, and date
   align(center)[
