@@ -4,25 +4,60 @@ This cheat sheet is written in Typst and can be compiled to PDF.
 
 ## Setup
 
-Typst CLI is already installed. You can verify it with:
+### Install Typst CLI
+
+Install Typst CLI (e.g. via brew):
+```bash
+brew install typst
+```
+
+You can then verify it with:
 ```bash
 typst --version
 ```
 
+### Syntax Highlighting in Cursor/VS Code
+
+For syntax highlighting and better Typst support:
+
+1. **Install the Tinymist extension:**
+   - Open the Extensions view in Cursor (Cmd+Shift+X)
+   - Search for "Typst" or "Tinymist"
+   - Install the **"Typst"** extension by Myriad-Dreamin (or search for `tinymist.tinymist`)
+   - Alternatively, install via command line:
+     ```bash
+     code --install-extension myriad-dreamin.tinymist
+     ```
+
+2. **Note:** Cursor may have some compatibility issues with VS Code extensions. If the extension doesn't work perfectly, you can still use basic syntax highlighting by ensuring `.typ` files are recognized.
+
+The extension provides:
+- ✅ Syntax highlighting
+- ✅ Code completion
+- ✅ Error checking
+- ✅ Live preview (if configured)
+
 ## Usage
 
-### Compile to PDF
+### ⚡ Watch mode (RECOMMENDED - Fastest!)
+**Use this for development!** It uses incremental compilation - only recompiles what changed, making subsequent compiles much faster.
+```bash
+make watch
+# or directly:
+typst watch cheat_sheet.typ cheat_sheet.pdf
+```
+Keep this running in a terminal while editing. The PDF will auto-update on save!
+
+### Compile to PDF (one-time)
 ```bash
 make compile
 # or directly:
 typst compile cheat_sheet.typ cheat_sheet.pdf
 ```
 
-### Watch mode (auto-recompile on changes)
+### Fast compile (optimized)
 ```bash
-make watch
-# or directly:
-typst watch cheat_sheet.typ cheat_sheet.pdf
+make fast
 ```
 
 ### Preview (compile and open)
