@@ -1,0 +1,18 @@
+# Generated PDF files
+*.pdf
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Typst cache
+.typst/
+
+# Temporary files
+*.tmp
+*.log
+
