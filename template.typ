@@ -3,14 +3,14 @@
   set document(author: authors.map(a => a.name), title: title)
   set page(numbering: "1", number-align: center, flipped: true, margin: 2em)
 
-  set text(font: "")
+  set text(font: "Libertinus Serif")
 
   // Set paragraph spacing.
 
   set heading(numbering: "1.1")
   set par(leading: 0.48em)
   
-  show: columns.with(3, gutter: 2.0em)
+  show: columns.with(4, gutter: 2.0em)
 
   // Main body.
   set par(justify: true)
