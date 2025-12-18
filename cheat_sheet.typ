@@ -4,96 +4,90 @@
 
 // Take a look at the file `template.typ` in the file panel
 // to customize this template and discover how it works.
-#show: project.with(
-  title: "Deep Learning Cheat Sheet",
-  authors: (
-    (name: "Authors"),
-  ),
-  date: "January 2026",
-)
+#show: project.with()
 
 #set math.mat(delim: "[")
 
-= History
+= Connectionism
 
 == Perceptron
 
-*Threshold Unit* \
-$f[w, b](x) = "sign"(x^top  w + b)$
+*Threshold Unit* 
+$f[w, b](x) = "sign"(x dot  w + b)$ with *Dec. Boundary* $x dot w + b =^! 0 <=> (x  dot  w) / norm(w) + b / norm(w) =^! 0$.
 
-*Decision Boundary* \
-$x^top  w + b != 0 <=> (x  *  w) / norm(w) + b / norm(w) != 0$ \
-$x^top  w - b = mat(x, -1)  dot  mat(w; b) =: tilde(x) ^top  tilde(w)$, #h(8pt) $tilde(x), tilde(w) in RR^(n+1)$.
+*Geometric Margin* $gamma[w, b](x, y) = (y (x dot  w + b)) / norm(w)$.\
+*Maximum Margin Classifier*\
+$(w^"*", b^"*") in "argmax"_(w,b) gamma[w, b](cal(S))$, \
+with $gamma[w, b](cal(S)) := min_((x,y) in cal(S)) gamma[w, b](x, y)$.
 
-*Geometric Margin* \
-$gamma[w, b](x, y) := y (x^top  w + b) / norm(w)$
-
-*Maximum Margin Classifier* \
-$(w^"*", b^"*") in "argmax"_(w,b) gamma[w, b](S)$, \
-with $gamma[w, b](S) := min_((x,y) in S) gamma[w, b](x, y)$
-
-*Perceptron Learning* \
-if $f[w, b](x) != y$: update $w <- w + y x$, and $b <- b + y$ \
-$w_0 in "span"(x_1, ..., x_s) => w_t in "span"(x_1, ..., x_s)$ (forall t)
+#colorbox(title: [Perception Learning], color: silver, inline:false)[
+  If $f[w, b](x) != y$: update $w$ `+=` $y x$, and $b$ `+=` $y$. \
+$w_0 in "span"(x_1, ..., x_s) => w_t in "span"(x_1, ..., x_s) forall t$.
+]
 
 *Convergence* \
-If exists $w$, $norm(w) = 1$, such that $gamma[w](S) = gamma > 0$ then $w_t  *  w >= t gamma$. \
-$R = max_(x in S) norm(x) => norm(w_t) <= R sqrt(t)$ \
-$cos(u, w_t) = (u  *  w_t) / norm(w_t) >= (t gamma) / (sqrt(t) R) = sqrt(t) gamma / R <= 1 => t <= R^2 / gamma^2$
+1. #text(0.89em)[If $exists w^*$, $norm(w^*) = 1$, s.t. $gamma[w^*](cal(S)) = gamma > 0 => w_t  dot  w^* >= t gamma$.]
+2. Let $R = max_(x in S) norm(x)$. Then $ norm(w_t) <= R sqrt(t)$. \
+#v(-6pt)
+#text(0.9em)[$cos angle(w^*, w_t) = (w^*  dot  w_t) / (norm(w^*) norm(w_t)) >= (t gamma) / (sqrt(t) R) = sqrt(t) gamma / R <=^! 1 => t <= R^2 / gamma^2$.]
 
-*Cover's Theorem* \
-$C(s + 1, n) = 2 sum_(i=0)^(n-1) binom(s, i)$ \
-$C(S, n)$: Number of ways to separate $S$ with $n$ dimensions \
-$C(s, n) = 2^s$ for $s <= n$ \
-Phase transition at $s = 2n$. For $s > 2n$ empty version space is the exception, otherwise the rule.
+#colorbox(title: [Cover's Theorem for $cal(S) subset RR^n, |cal(S)| = s$],color: silver, inline:false)[
+  $C(cal(S), n)$: \# of ways to separate $cal(S)$ in $n$ dimensions. Position of pts does not matter (general positition).
+
+  $C(s + 1, n) = 2 sum_(i=0)^(n-1) binom(s, i)$, 
+  $C(s, n) = 2^s$ for $s <= n$.
+
+  Phase transition at $s = 2n$. For $s < 2n$ empty version space is the exception, otherwise the rule.
+]
 
 === Hopfield Networks
 
-*Hopfield Model* \
-$E(X) = -1/2 sum_(i != j) w_(i j) X_i X_j + sum_i b_i X_i$ \
-where $X_i in {-1, +1}$ \
-$w_(i j) = w_(j i)$ (forall $i, j$), $w_(i i) = 0$ (forall $i$): Interaction strengths
+*Hopfield Model* 
+$E(X) = -1/2 sum_(i != j) w_(i j) X_i X_j + sum_i b_i X_i$,
+where $X_i in {plus.minus 1}$. $w_(i j) = w_(j i)$ , $w_(i i) = 0$.
 
-*Hebbian Learning* \
-$x^t in {+-1}^n$ ($1 <= t <= s$) \
-$w_(i j) = 1/n sum_(t=1)^s x_i^t x_j^t$ \
-$W = 1/n sum_(t=1)^s x^t (x^t)^top$
+#colorbox(title: [Hebbian Learning], color: silver, inline:false)[
+  Choose patterns ${x}^s_(t=1) in {plus.minus 1}^n$, build weights once using them:
+$w_(i j) = 1/n sum_(t=1)^s x_i^t x_j^t$, $w_(i i) = 0$. For inference, update $X$ iteratively: $X_i^(t+1) = "sign"(sum_j w_(i j) X_j^t + b_i)$ asynchronously.
+Capacity for random, uncorrelated patterns: $s_"max" approx 0.138 n$.
+]
+
 
 == Feedforward Networks
 
 === Linear Models
 
-*Linear regression* \
-$h[w](S) = 1/(2s) norm(X w - y)^2$ \
-$nabla h = 2 X^top X w - 2 X^top y$
+*Linear regression* (MSE)\
+$L[w](X, y) =  norm(X w - y)^2/(2n)$,
+$nabla L = (X^top X w - X^top y) / n$.
 
 *Moore-Penrose inverse solution* \
-$w^"*" = X^"*" y in "argmin"_w h[w]$ \
-where $X^"*" := lim_(delta -> 0) (X^top X + delta I)^(-1) X^top$
+$w^* = X^* y in "argmin"_w L[w](X, y)$,
+where $X^* = lim_(delta -> 0) (X^top X + delta I)^(-1) X^top$ Moore-Penrose inverse.
 
 *Stochastic gradient descent update* \
-$w_(t+1) := w_t + eta (y_(i_t) - w_t^top x_(i_t)) x_(i_t)$ \
-with $i_t ~ "Uniform"(1, ..., s)$
+$w_(t+1) = w_t + eta (y_(i_t) - w_t^top x_(i_t)) x_(i_t)$, $i_t ~ cal(U)([1, n])$.
 
 *Gaussian noise model* \
-$y_i = w^top x_i + epsilon_i$, $epsilon_i ~ "N"(0, sigma^2)$ \
-Least squares equivalent to negative log likelihood of gaussian noise model
+$y_i = w^top x_i + epsilon_i$, $epsilon_i ~ "N"(0, sigma^2)$, LSQ equivalent to NLL of gaussian noise model. 
 
 *Ridge regression* \
-$h_lambda[w] := h[w] + lambda/2 norm(w)^2$ \
-$w^"*" = (X X^top + lambda I)^(-1) X^top y$
+$h_lambda [w] = h[w] + lambda/2 norm(w)^2$,
+$w^"*" = (X^top X + lambda I)^(-1) X^top y$.
+
 
 *Logistic function* \
-$sigma(z) = 1/(1 + e^(-z))$ \
-$sigma(z) + sigma(-z) = 1$ \
-$sigma' = sigma(1 - sigma)$, $sigma'' = sigma(1 - sigma)(1 - 2 sigma)$
-
-*Cross entropy loss* \
+$sigma(z) = 1/(1 + e^(-z))$, $sigma(z) + sigma(-z) = 1$. \
+$sigma' = sigma(1 - sigma)$, $sigma'' = sigma(1 - sigma)(1 - 2 sigma)$ \
+*Cross entropy loss* for $y in {0, 1}$\
 $ell(y, z) = -y log sigma(z) - (1 - y) log(1 - sigma(z))$ \
-$= -log sigma((2y - 1)z)$
+$= -log sigma((2y - 1)z)$.
 
-*Logistic regression with cross entropy loss* \
-$nabla ell_i = [sigma(w^top x_i) - y_i] x_i$
+*Logistic regression with CE loss*:
+$L[w]=1/n sum_(i=1)^n ell_i (y_i , w^top x_i) $,$nabla ell_i = [sigma(w^top x_i) - y_i] x_i$.
+
+
+#line(length: 100%)
 
 === Feedforward Networks
 

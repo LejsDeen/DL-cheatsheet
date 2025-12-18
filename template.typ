@@ -1,7 +1,7 @@
 #let project(title: "", authors: (), date: none, body) = {
   // Set the document's basic properties.
   set document(author: authors.map(a => a.name), title: title)
-  set page(numbering: "1", number-align: center, flipped: true, margin: 2em)
+  set page(numbering: "1", number-align: center, flipped: true, margin: 1em)
 
   set text(font: "Libertinus Serif")
 
@@ -42,7 +42,7 @@
 }
 
 #let colorbox(title: none, inline: true, breakable: true, color: blue, content) = {
-  let colorOutset = 4pt
+  let colorOutset = 3pt
   let titleContent = if title != none {
     box(
       fill: silver,
