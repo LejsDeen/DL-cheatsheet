@@ -86,57 +86,47 @@ $= -log sigma((2y - 1)z)$.
 *Logistic regression with CE loss*:
 $L[w]=1/n sum_(i=1)^n ell_i (y_i , w^top x_i) $,$nabla ell_i = [sigma(w^top x_i) - y_i] x_i$.
 
+*Generic feedforward layers* \
+#text(0.95em)[$F: underbrace(RR^(m(n+1)), "parameters") times underbrace(RR^n, "input") -> underbrace(RR^m, "output")$],
+$F[theta](x)  = phi(W x + b)$.
 
-#line(length: 100%)
-
-=== Feedforward Networks
-
-*Generic feedforward layer definition* \
-$F: RR^(m(n+1)) times RR^n -> RR^m$, \
-$F[theta](x) := phi(W x + b)$, $theta := "vec"(W, b)$
-
-*Composition of layers* \
-$G = F^L[theta^L] @ ... @ F^1[theta^1]$ \
-where $F^l[W^l, b^l](x) := phi^l(W^l x + B^l)$
+*Composition of layers*
+$G = F^L [theta^L] circle.small dots circle.small F^1[theta^1]$.
 
 *Layer activations* \
-$x^l := (F^l @ ... @ F^1)(x) = F^l(x^(l-1))$ \
-identifying $x^0 = x$, $x^L = F(x)$
+$x^l = F^l circle.small dots circle.small F^1(x) = F^l (x^(l-1))$, $x^0 = x$, $x^L = F(x)$
 
-*Softmax function* \
-$"softmax"(z)_i = e^(z_i) / sum_j e^(z_j)$, $"softmax"(A)_(i j) = e^(A_(i j)) / sum_k e^(A_(i k))$ \
-$ell(y, z) = (-z_y + log sum_j e^(z_j)) / (ln 2)$
+*Softmax*$(z)_i = e^(z_i) / sum_j e^(z_j)$,
+CE-loss in terms of logits $ell(y, z) = -z_y + log sum_j e^(z_j)$.
 
-*Residual layer definition* \
-$F[W, b](x) = x + (phi(W x + b) - phi(0))$ \
-therefore $F[0, 0] = id$ \
-Skip connection: Concatenate previous layer back in
+*Residual layer* $F[W, b](x) = x + (phi(W x + b) - phi(0))$,
+therefore $F[0, 0] = id$. Link that propagates $x$ forward is called a *skip connection*.
 
 === Sigmoid Networks
 
-*Sigmoid activation* \
-$phi(z) := sigma(z) = 1/(1 + e^(-z))$
-
+*Sigmoid activation* $sigma(z) = 1/(1 + e^(-z)) = 1-sigma(-z)$. \
+$sigma'(z) = sigma(z) (1 - sigma(z))$. \
 *Hyperbolic tangent activation* \
-$tanh(z) = (e^z - e^(-z))/(e^z + e^(-z)) = 2 sigma(2z) - 1$ \
-$tanh'(z) = 1 - tanh^2(z)$
+$tanh(z) = (e^z - e^(-z))/(e^z + e^(-z)) = 2 sigma(2z) - 1$. \
+$tanh'(z) = 1 - tanh^2(z)$.
 
-*Baron's Theorem: Approximation error* \
-For $f$ with finite $C_f := integral norm(omega) |hat(f)(omega)| dif omega < oo$ there exists MLP $g$ with one hidden layer of width $m$ that: \
-$integral_B (f(x) - g_m(x))^2 mu(dif x) <= O(1/m)$
+*Smooth function approximation* \
+Polynomials, ridge functions ($phi(a^top x + b)$) and MLPs with $C^oo$ activations are universal approximators.
 
-=== ReLU Networks
+*Barron's Theorem: Approximation error* \
+For $f: RR^d arrow RR$ with $C_f = integral norm(omega) |hat(f)(omega)| dif omega < oo$, $exists$ width-$m$ MLP $g_m$ s.t.: $integral_B |f-g_m|^2 dif x <= O(1/m)$
 
-*ReLU activation* \
-$phi(z) := (z)_+ := max{0, z}$
+=== ReLU$(z)=max(0, z)$ networks
 
-ReLU networks are universal function approximators
+ReLU networks are universal approximators.
 
-*Zalabsky: Connected regions* \
-$R(H) <= sum_(i=0)^(min{n,m}) binom(m, i) := R(m)$
+*Zalavsky's Thoerem: Activation patterns* \
+$m$ ReLU neurons in $RR^n$. Each neuron's hyperplane ${w_i ^top x= 0}$ partitions $RR^n$ into $R(m)$ connected regions of constant activation pattern. $R(m) <= sum_(i=0)^(min(n,m)) binom(m, i) << 2^m$.
 
 *Montufar: Connected regions in ReLU network* \
-$R(m, L) >= R(m) (m/n)^(n(L-1))$, $L$: layers, $m$: width
+$R(m, L) >= R(m) floor(m/n)^(n(L-1))$, $L$: layers, $m$: width.
+
+#line(length: 100%)
 
 == Gradient-Based Learning
 
