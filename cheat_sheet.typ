@@ -12,44 +12,43 @@
 
 == Perceptron
 
-*Threshold Unit* 
-$f[w, b](x) = "sign"(x dot  w + b)$ with *Dec. Boundary* $x dot w + b =^! 0 <=> (x  dot  w) / norm(w) + b / norm(w) =^! 0$.
-
-*Geometric Margin* $gamma[w, b](x, y) = (y (x dot  w + b)) / norm(w)$.\
+*Threshold Unit*  
+$f[w, b](x) = "sign"(x dot  w + b)$ with *Decision Boundary* $x dot w + b =^! 0$. $-b/norm(w)$ is the signed distance of the hyperplane from $0$. \
+*Geometric Margin* $gamma[w, b](x, y) = (y (x dot  w + b)) / norm(w)$.
 *Maximum Margin Classifier*\
-$(w^"*", b^"*") in "argmax"_(w,b) gamma[w, b](cal(S))$, \
-with $gamma[w, b](cal(S)) := min_((x,y) in cal(S)) gamma[w, b](x, y)$.
+$(w^"*", b^"*") in "argmax"_(w,b) gamma[w, b](cal(S))$,
+with margin $gamma[w, b](cal(S)) := min_((x,y) in cal(S)) gamma[w, b](x, y)$.
 
-#colorbox(title: [Perception Learning], color: silver, inline:false)[
-  If $f[w, b](x) != y$: update $w$ `+=` $y x$, and $b$ `+=` $y$. \
-$w_0 in "span"(x_1, ..., x_s) => w_t in "span"(x_1, ..., x_s) forall t$.
+#colorbox(title: [Perception Learning], inline:false)[
+  `if` $f[w, b](x) != y$:  $w<- w+y x$, $b <-b +y$. \
+  Aims to find some solution; assumes version space is non-empty. Does not aim for small err.
+  #v(-6pt)
+  #fitWidth($w_0 in "span"(x_1, ..., x_s) => w_t in "span"(x_1, ..., x_s) forall t$)
 ]
 
-*Convergence* \
-1. #text(0.89em)[If $exists w^*$, $norm(w^*) = 1$, s.t. $gamma[w^*](cal(S)) = gamma > 0 => w_t  dot  w^* >= t gamma$.]
+*Convergence - Novikoff's Theorem* \
+1. #text(0.76em)[If $exists w^*$, $norm(w^*) = 1$, s.t. $gamma[w^*](cal(S)) = gamma > 0 => w_t  dot  w^* >= t gamma$.]
 2. Let $R = max_(x in S) norm(x)$. Then $ norm(w_t) <= R sqrt(t)$. \
 #v(-6pt)
-#text(0.9em)[$cos angle(w^*, w_t) = (w^*  dot  w_t) / (norm(w^*) norm(w_t)) >= (t gamma) / (sqrt(t) R) = sqrt(t) gamma / R <=^! 1 => t <= R^2 / gamma^2$.]
+#text(0.83em)[$cos angle(w^*, w_t) = (w^*  dot  w_t) / (norm(w^*) norm(w_t)) >= (t gamma) / (sqrt(t) R) = sqrt(t) gamma / R <=^! 1 => t <= R^2 / gamma^2$.]
 
 #colorbox(title: [Cover's Theorem for $cal(S) subset RR^n, |cal(S)| = s$],color: silver, inline:false)[
-  $C(cal(S), n)$: \# of ways to separate $cal(S)$ in $n$ dimensions. Position of pts does not matter (general positition).
-
+  $C(cal(S), n)$: \# of ways to separate $cal(S)$ in $n$ dimensions. Position of pts does not matter (as long as they are in general positition).
   $C(s + 1, n) = 2 sum_(i=0)^(n-1) binom(s, i)$, 
-  $C(s, n) = 2^s$ for $s <= n$.
-
+  $C(s, n) = 2^s$ for $s <= n$. 
   Phase transition at $s = 2n$. For $s < 2n$ empty version space is the exception, otherwise the rule.
 ]
 
 == Hopfield Networks
 
-*Hopfield Model* 
+
 $E(X) = -1/2 sum_(i != j) w_(i j) X_i X_j + sum_i b_i X_i$,
 where $X_i in {plus.minus 1}$. $w_(i j) = w_(j i)$ , $w_(i i) = 0$.
 
 #colorbox(title: [Hebbian Learning], color: silver, inline:false)[
-  Choose patterns ${x}^s_(t=1) in {plus.minus 1}^n$, build weights once using them:
+  Choose patterns ${x^t}^s_(t=1) in {plus.minus 1}^n$, compute weights once using them:
 $w_(i j) = 1/n sum_(t=1)^s x_i^t x_j^t$, $w_(i i) = 0$. For inference, update $X$ iteratively: $X_i^(t+1) = "sign"(sum_j w_(i j) X_j^t + b_i)$ asynchronously.
-Capacity for random, uncorrelated patterns: $s_"max" approx 0.138 n$.
+Capacity for random, uncorrelated patterns: $s_"max" approx 0.138 n$. Requiring pattern to be retrieved with high probability: $s <= n/(2 log_2 n)$.
 ]
 
 
@@ -59,19 +58,18 @@ Capacity for random, uncorrelated patterns: $s_"max" approx 0.138 n$.
 
 *Linear regression* (MSE)\
 $L[w](X, y) =  norm(X w - y)^2/(2n)$,
-$nabla L = (X^top X w - X^top y) / n$.
-
+$nabla_w L = (X^top X w - X^top y) / n$.
 *Moore-Penrose inverse solution* \
 $w^* = X^* y in "argmin"_w L[w](X, y)$,
 where $X^* = lim_(delta -> 0) (X^top X + delta I)^(-1) X^top$ Moore-Penrose inverse.
 
-*Stochastic gradient descent update* \
+*Stochastic gradient descent update* 
 $w_(t+1) = w_t + eta (y_(i_t) - w_t^top x_(i_t)) x_(i_t)$, $i_t ~ cal(U)([1, n])$.
 
-*Gaussian noise model* \
-$y_i = w^top x_i + epsilon_i$, $epsilon_i ~ "N"(0, sigma^2)$, LSQ equivalent to NLL of gaussian noise model. 
+*Gaussian noise model* 
+$y_i = w^top x_i + epsilon_i$, $epsilon_i ~ cal(N)(0, sigma^2)$, LSQ equivalent to NLL of gaussian noise model. 
 
-*Ridge regression* \
+*Ridge regression* 
 $h_lambda [w] = h[w] + lambda/2 norm(w)^2$,
 $w^"*" = (X^top X + lambda I)^(-1) X^top y$.
 
@@ -81,61 +79,69 @@ $sigma(z) = 1/(1 + e^(-z))$, $sigma(z) + sigma(-z) = 1$. \
 $sigma' = sigma(1 - sigma)$, $sigma'' = sigma(1 - sigma)(1 - 2 sigma)$ \
 *Cross entropy loss* for $y in {0, 1}$\
 $ell(y, z) = -y log sigma(z) - (1 - y) log(1 - sigma(z))$ \
-$= -log sigma((2y - 1)z)$.
-
-*Logistic regression with CE loss*:
+$= -log sigma((2y - 1)z)$. \
+*Logistic regression with Cross Entropy loss*:
 $L[w]=1/n sum_(i=1)^n ell_i (y_i , w^top x_i) $,$nabla ell_i = [sigma(w^top x_i) - y_i] x_i$.
 
 == Feedforward Networks
 
 *Generic feedforward layers* \
-#text(0.95em)[$F: underbrace(RR^(m(n+1)), "parameters") times underbrace(RR^n, "input") -> underbrace(RR^m, "output")$],
-$F[theta](x)  = phi(W x + b)$.
+#text(0.7em)[$F: underbrace(RR^(m(n+1)), "parameters") times underbrace(RR^n, "input") -> underbrace(RR^m, "output")$], $F[theta](x)  = phi(W x + b)$. \
+*Layer composition*
+$G = F^L [theta^L] circle.small dots circle.small F^1[theta^1]$. \
+*Layer activations* 
+$x^l = F^l circle.small dots circle.small F^1(x) .= F^l (x^(l-1))$, $x^0 = x$, $x^L = F(x)$.
 
-*Composition of layers*
-$G = F^L [theta^L] circle.small dots circle.small F^1[theta^1]$.
-
-*Layer activations* \
-$x^l = F^l circle.small dots circle.small F^1(x) = F^l (x^(l-1))$, $x^0 = x$, $x^L = F(x)$
-
-*Softmax*$(z)_i = e^(z_i) / sum_j e^(z_j)$,
-CE-loss in terms of logits $ell(y, z) = -z_y + log sum_j e^(z_j)$.
+*Softmax*$(z)_i = e^(z_i) / (sum_j e^(z_j))$,
+CE-loss in terms of logits $ell(y, z) = 1/ln(2) [-z_y + ln sum_j e^(z_j)]$.
+CE between two pmfs: $l(p;q) = -sum_i p_i log q_i$.\
+CE with hard labels is NLL-loss.
 
 *Residual layer* $F[W, b](x) = x + (phi(W x + b) - phi(0))$,
-therefore $F[0, 0] = id$. Link that propagates $x$ forward is called a *skip connection*.
+therefore $F[0, 0] = id$. Link that propagates $x$ forward is called a *skip connection*. Composing residual layers: number of paths grows exponentially, can include projections for flexiblity of changing dimensionality.
 
 == Sigmoid Networks
 
-*Sigmoid activation* $sigma(z) = 1/(1 + e^(-z)) = 1-sigma(-z)$. \
-$sigma'(z) = sigma(z) (1 - sigma(z))$. \
+*Sigmoid activation* $sigma(z) = 1/(1 + e^(-z))$. \
 *Hyperbolic tangent activation* \
 $tanh(z) = (e^z - e^(-z))/(e^z + e^(-z)) = 2 sigma(2z) - 1$. \
 $tanh'(z) = 1 - tanh^2(z)$.
 
 *Smooth function approximation* \
-Polynomials, ridge functions ($phi(a^top x + b)$) and MLPs with $C^oo$ activations are universal approximators.
-
-*Barron's Theorem: Approximation error* \
-For $f: RR^d arrow RR$ with $C_f = integral norm(omega) |hat(f)(omega)| dif omega < oo$, $exists$ width-$m$ MLP $g_m$ s.t.: $integral_B |f-g_m|^2 dif x <= O(1/m)$
+Polynomials, ridge functions ($phi(a^top x + b)$) and MLPs with $C^oo$ activations are universal approximators. \
+*Weierstrass:* Polynomials are universal approximators of $C(RR)$ on any given compact $I$. \
+*Barron's Theorem:*
+For $f: RR^d arrow RR$ with $C_f = integral norm(omega) |hat(f)(omega)| dif omega < oo$, $exists$ width-$m$ MLP $g_m$ s.t.: $integral_B |f-g_m|^2 dif x <= O(1/m)$.
 
 == ReLU$(z)=max(0, z)$ networks
-
-ReLU networks are universal approximators.
-
 *Zalavsky's Thoerem: Activation patterns* \
-$m$ ReLU neurons in $RR^n$. Each neuron's hyperplane ${w_i ^top x= 0}$ partitions $RR^n$ into $R(m)$ connected regions of constant activation pattern. $R(m) <= sum_(i=0)^(min(n,m)) binom(m, i) << 2^m$.
+$m$ ReLU neurons in $RR^n$. Each neuron's hyperplane ${w_i ^top x= 0}$ partitions $RR^n$ into $R(m)$ connected regions of constant activation pattern. $R(m) <= sum_(i=0)^(min(n,m)) binom(m, i) << 2^m$. \
+*Montufar: Connected linear regions in ReLU network* 
+$R(m, L) >= R(m) floor(m/n)^(n(L-1))$, $L$: layers, $m$: width. \
+*Shektman*: Piecewise linear functions are dense in $C([0;1])$. 
+*Lebesgue*: Piecewise linear function with $m$ pieces can be written $g(x) = a x + b + sum_(i=1)^(m-1) c_i (x-x_i)_+$; $m+1$ parameters, $a, b, c_i$. \
+*ReLU networks with 1 hidden layer are universal approximators.* \
+*Wang and Sun*: Every continuous piecewise linear function $g: RR^n -> RR$ can be written as a signed sum of $k$-Hinges with $k <= n+1$. A $k$-Hinge is a function $g(x) = max_(j=1)^k {w_j^top x + b_j}$, generalizes ReLU, known as Maxout unit.
 
-*Montufar: Connected regions in ReLU network* \
-$R(m, L) >= R(m) floor(m/n)^(n(L-1))$, $L$: layers, $m$: width.
+*Linear Autoencoder*: Optimal $A=D E$, s.t. frobenius norm reconstruction err of $A X$ is minimized, is $D=U_k, E=U_k ^top$, not jointly convex in $E$ and $D$, but individually. $hat(X)^* = arg min_("rank"(hat(X))=k)$$norm(X - hat(X))^2_F = U Sigma_k V^top$ SVD. 
 
 = Gradient-Based Learning
+
+Forward mode is more memory efficient, but backward mode is more runtime efficient. Fwd is $O("#params")$, reverse is $O(d_"out")$. \
+*Numerator layout*: 
+For $f : RR^n -> RR^m$,
+$((partial y)/(partial x))_(i j) = (partial y_i)/(partial x_j) in RR^(m times n)$ and $f : RR^(n_1 times n_2) -> RR$, $nabla f(X)_(i j) = (partial f)/(partial X_(i j)) in RR^(n_1 times n_2)$.
 
 == Backpropagation
 
 $x^ell = phi(W^ell x^(ell-1) + b^ell)$,
 $(partial cal(L))/(partial W^ell) = delta^ell (x^(ell-1))^top$, 
-$(partial cal(L))/(partial b^ell) = delta^ell$, \
+$(partial cal(L))/(partial b^ell) = delta^ell$, 
 $delta^ell = (partial cal(L))/(partial x^ell) dot.circle phi'(W^ell x^(ell-1) + b^ell), (partial cal(L))/(partial x^ell)=(W^(ell+1))^top delta^(ell+1)$.
+
+#colorbox(color: purple)[
+$(partial L) / (partial x) = (partial L) / (partial z) (partial z) / (partial x)$. For $x in RR^n$ different $z$: 
+$(partial (W x))/(partial x) = W$, element wise $f$ gives : $(partial f(x))/(partial x) = "diag"(f'(x))$, $(partial norm(hat(y)-y)^2)/(partial hat(y)) = 2 (hat(y) - y)^top$, $(partial L)/(partial hat(y)) (partial (W h))/(partial W) = h dot (partial L) / (partial hat(y))$.]
 
 == Gradient Descent
 
@@ -146,20 +152,24 @@ $delta^ell = (partial cal(L))/(partial x^ell) dot.circle phi'(W^ell x^(ell-1) + 
 *Newton's method* gives optimal step for quadratic model: $Delta x = - [nabla^2 f(x)]^(-1) nabla f(x)$.
 
 *Optimal LR for Convex Quadratics* \
-For $f(x) = 1/2 x^top Q x$, $eta^star = 2/(lambda_max (Q) + lambda_min (Q))$. Stability requires $eta <= 2/(lambda_max (Q))$. Quadratic approx. of $f$: $f(x + Delta x) approx f(x) + nabla f(x)^top Delta x + 1/2 Delta x^top nabla^2 f(x) Delta x$.
+For $f(x) = 1/2 x^top Q x$, $eta^star = 2/(lambda_max (Q) + lambda_min (Q))$. Stability requires $eta <= 2/(lambda_max (Q))$. Quadratic approx. of $f$: $f(x + Delta x) approx f(x) + nabla f(x)^top Delta x + 1/2 Delta x^top nabla^2 f(x) Delta x$. Condition number of $Q$: $lambda_"max"/lambda_"min"$
 
-*L-smoothness:* $norm(nabla f(x) - nabla f(y)) <= L norm(x - y)$. \
+*L-smooth:* $norm(nabla f(x) - nabla f(y)) <= L norm(x - y)$. \
 Equivalently (if $f$ twice differentiable): \ 
 $f(y) <= f(x) + nabla f(x)^top (y-x) + L/2 norm(y-x)^2$. \
-Implies $lambda_i (nabla^2 f(x)) <= L$ for all EVs $lambda_i$ of $nabla^2 f(x)$.
-
-*Convexity*: #text(0.87em)[$f(lambda w + (1 - lambda) w') <= lambda f(w) + (1 - lambda) f(w')$]
-
+Implies $lambda_i (nabla^2 f(x)) <= L$ for all EVs $lambda_i$ of $nabla^2 f(x)$. \
+*Convexity* ($lambda in [0,1]$): \ $f(lambda w + (1 - lambda) w') <= lambda f(w) + (1 - lambda) f(w')$. \
 *$mu$-Strong convexity:* ($mu = 0 <=>$ convex + diff)\
 $<=>f(y) >= f(x) + nabla f(x)^top (y-x) + mu/2 norm(y-x)^2$. \
-Implies $lambda_i (nabla^2 f(x)) >= mu$ for all EVs $lambda_i$ of $nabla^2 f(x)$.
+Implies $lambda_i (nabla^2 f(x)) >= mu$ for all EVs $lambda_i$ of $nabla^2 f(x)$. \
+For $f: RR -> RR$, these become: $L >= f''(x) >= mu quad forall x$.
+#colorbox[
+If $f$ $mu$-strongly convex, $L$-smooth, GD iterates $x_t$ with $0<eta <= 1/L$ converge to unique minimizer $x^*$ at rate $norm(x_t - x^*)^2 <= (1-eta mu)^k norm(x_0 - x^*)^2$. \
+If $f$ convex, diff and $L$-smooth, with $eta <= 1/L$, $f(x_t) - f(x^*) <= 1/(2 eta t) norm(x_0 - x^*)^2$.
+*Non-Convex case*: If $f$ diff, $L$-smooth, with minimum $f^*$, GD iterates with $eta <=1/L$ satisfy
+$min_(i=0)^t norm(nabla f(x_i))^2 <= (2(f(x_0)-f^*))/(eta(t +1))$.
+] 
 
-For $f: RR -> RR$, these become: $L >= f''(x) >= mu quad forall x$. \
 If $f$ diff and $L$-smooth: $f(x) - f(x^*) >= 1/(2L) norm(nabla f(x))^2$.
 
 *Polyak-Lojasiewicz condition* \
@@ -171,17 +181,23 @@ $mu$-strong convex $=>$ $mu$-PL.
 *$mu$-PL + L-smooth:* Use $eta^* = 2/(L+mu)$. Convergence: \ $f(x_t) - f(x^*) <= (1-mu/L)^t (f(x_0) - f(x^*))$.
 ]
 
+
+
 == Stochastic Gradient Descent
 
 *SGD variance* \
-$V[theta](S) = 1/s sum_(i=1)^s norm(nabla f[theta](S) - nabla f[theta](x_i, y_i))^2$
+#text(size: 0.9em)[
+$V[theta](S) = 1/s sum_(i=1)^s norm(nabla f[theta](S) - nabla f[theta](x_i, y_i))^2$]. 
 
-*SGD convergence rate* with Polyak averaging\
+Polyak averages: $overline(x)_(k+1) = k/(k+1) overline(x)_k + 1/(k+1) x_(k+1)$
+
+*SGD convergence rate* with Polyak averaging and $eta_k prop 1/k$ \
+#text(size: 0.9em)[
 $EE[f(overline(theta)_t)] - min f <= O(1/sqrt(t))$ (general) \
 $EE[f(overline(theta)_t)] - min f <= O((log t) / t)$ (strongly convex) \
 $EE[f(overline(theta)_t)] - min f <= O(1/t)$ (additionally smooth)
 
-*Minibatch SGD:* Variance $arrow.b$ by $prop r$. Can $arrow.t$ $ eta prop r$.
+*Minibatch SGD:* Variance $arrow.b$ by $prop r$. Can $arrow.t$ $ eta prop r$.]
 
 *Var. Reduction with SVRG* w/ occasional snapshot $overline(theta)$: $theta_(t+1) = theta_t - eta [nabla f_i (theta_t) - nabla f_i (overline(theta)) + nabla f(overline(theta))]$.
 
@@ -207,7 +223,15 @@ $theta_(t+1) = theta_t - eta hat(m)_t / (sqrt(hat(v)_t) + epsilon)$. \
 
 *signSGD*: $theta_(t+1) = theta_t - eta "sign"(nabla f_(I_k)(theta_t))$.
 
-= Convolutional Networks
+#colorbox(color: purple)[
+$x^4$ is strictly convex but not strongly convex, since near $0$ the growth of $x^4$ is slower than $x^2$, violating the uniform lower bound on curvature. \
+With $f$ $L$-smooth and $mu$-PL, GD with optimal step-size $arg min_eta f(theta_t - eta nabla f(theta_t))$ converges globally at linear rate. \
+$f(w)=(norm(X w - y)^2)/2 + lambda norm(w)^2$ satisfies PL-condition. \
+*Muon*: Orthogonalize gradient, should increase the scale of other rare directions which have small magnitude in update but are important. \
+$Delta W = - norm(nabla L(W))_* dot d_"out"/d_"in" dot U^top V$ ($nabla L(W) = U Sigma V^top$) minimizes RHS of: $L(W + Delta W) <= L(W) + chevron nabla_W L(W), Delta W chevron.r_F + 1/2 d_"in"/d_"out" norm(Delta W)^2_2$. \
+GD Trajectory always orthogonal to level set.]
+
+= Convolutional Networks (!)
 
 == Convolutions $(f*g)(u) = (g*f)(u)$
 
