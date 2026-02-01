@@ -213,7 +213,7 @@ More theoretical grounding than heavy ball.
 
 *AdaGrad updates* \
 $theta_(t+1) = theta_(t) -  eta / sqrt(gamma_t + epsilon) dot.circle nabla f(theta_t)$, \
-$gamma^t = gamma^(t-1) + nabla f(theta_t) nabla f(theta_t)$.
+$gamma^t = gamma^(t-1) + nabla f(theta_t) dot.o nabla f(theta_t)$.
 
 *Adam updates* \
 $m_t = beta_1 m_(t-1) + (1-beta_1) nabla f(theta_t)$, $hat(m)_t = m_t / (1-beta_1^t)$\
@@ -231,9 +231,9 @@ $f(w)=(norm(X w - y)^2)/2 + lambda norm(w)^2$ satisfies PL-condition. \
 $Delta W = - norm(nabla L(W))_* dot d_"out"/d_"in" dot U^top V$ ($nabla L(W) = U Sigma V^top$) minimizes RHS of: $L(W + Delta W) <= L(W) + chevron nabla_W L(W), Delta W chevron.r_F + 1/2 d_"in"/d_"out" norm(Delta W)^2_2$. \
 GD Trajectory always orthogonal to level set.]
 
-= Convolutional Networks (!)
+= Convolutional Networks
 
-== Convolutions $(f*g)(u) = (g*f)(u)$
+Convolution $(f*g)(u) = (g*f)(u)$
 
 $= integral_(-oo)^oo f(t)g(u-t) dif t = integral_(-oo)^oo f(u-t) g(t) dif t$. \
 $(f*g) = "Toeplitz-Matrix"(g) f$.
@@ -241,8 +241,25 @@ $(f*g) = "Toeplitz-Matrix"(g) f$.
 *Fourier transform convolution property* \
 $cal(F)(f * g) = cal(F)(f) dot cal(F)(g)$.
 
-*Cross-correlation*:
+*Cross-correlation*: \
 $(g star f)[u] = sum_t g[t] f[u + t]$.
+
+#colorbox(color:purple)[
+$(f(t) star g(t))(y) = (f(-t) * g(t))(y)$. \
+$(f(t)*g(t))(-y) = (f(-t)*g(t))(y) = (f(t)*g(-t))(y)$. \
+Translation-Equivariant Operators $=$ Convolutions. \
+For $x in RR^D, h in RR^K$, $x * h = W_h x.$
+*Toeplitz Matrix*: $W_h in RR^((D-K+1) times D)$\ $(W_h)_(k,j) = cases(
+  h_(K+k-j) & "if" k <= j <= k+K-1,
+  0 & "otherwise"
+)$ for $h in RR^K$.
+
+$nabla_w v^top "vec"(sigma (x * w)) = "flip"[x] * ["mat"(v) dot.o sigma' (x * w)]$, flip rows and columns.
+
+Normal convolution of image $x in RR^(d times d)$, kernel $w in RR^(q times q)$ $x*w$ requires $cal(O)((d-q)^2 q^2)$. If $w$ separable st $w= u v^top$, $u in RR^q, v in RR^p$, $cal(O)(d q (d-q))$
+
+Output size: $H_"out" = floor((H_"in" + 2 P - K)/S) + 1$, Height, Input size, padding, Kernel size, stride.
+]
 
 == Convolutional Networks
 
@@ -267,14 +284,14 @@ Use only input embeddings after training.
 
 = Geometric Deep Learning
 
-*Group* is set $G$ with a binary operation s.t.: 1) $(g h) f = g (h f)$, 2) $exists e in G$ s.t. $e f = f e = f$, 3) $forall g space exists g^(-1) in G$ s.t. $g g^(-1) = g^(-1) g = e$, 4) $g h in G space forall g, h$.
+*Group* is set $G$ with a binary operation s.t.: 1) $(g h) f = g (h f)$, 2) $exists e in G$ s.t. $e f = f e = f$, 3) $forall g space exists g^(-1) in G$ s.t. $g g^(-1) = g^(-1) g = e$, 4) $g h in G space forall g, h$. *Abelian* if $g h = h g$.
 
 == Sets and Points
 
 *Order-invariance property:* \
 $f(x_1, ..., x_M) = f(x_(pi(1)), ..., x_(pi(M)))$ (perturbations).
 
-*Equivariance property:* \
+*(Permutation) Equivariance property:* \
 $f(x_1, ..., x_M) = (y_1, ..., y_M) => f(x_(pi(1)), ..., x_(pi(M))) = (y_(pi(1)), ..., y_(pi(M)))$
 
 *Deep Sets model* (invariant layer): \
@@ -319,7 +336,8 @@ $X^+ = sigma(overline(A) X W)$, $W in RR^(M times N)$.
 $Delta f = sum_(n=1)^N (partial^2 f) / (partial x_n^2)$, $f: RR^N -> RR$.
 
 *Graph Laplacian* \
-$L = D - A$, $(L x)_n = sum_(m=1)^M a_(n m) (x_n - x_m)$.
+$L = D - A$, $(L x)_n = sum_(m=1)^M a_(n m) (x_n - x_m)$. \
+$x^top L x = 1/2 sum_u sum_v A_(u v) (x_u - x_v)^2 >= 0$ (psd).
 
 *Normalized Laplacian* \
 $tilde(L) = I - D^(-1/2) A D^(-1/2) = D^(-1/2) (D - A) D^(-1/2)$.
@@ -341,13 +359,18 @@ $U (sum_(k=0)^K alpha_k Lambda^k) U^top = sum_(k=0)^K alpha_k L^k$
 $x_i^(l+1) = sum_j p_(i j)(L) x_j^l + b_i$, \
 $p_(i j)(L) = sum_(k=0)^K alpha_(i j k) L^k$
 
+#colorbox(color:purple)[
+  GNNs cannot distinguish between certain graphs that are topologically different. Unconstrained set architectures are more powerful.
+If *WL-test* says graphs are different, they are; but if it says they're the same, they might still be different.
+]
+
 = Theory of DNNs
 
 == Statistical Learning Theory
 
 *Risk decomposition* \
 $f^*$ : optimal predictor over all functions, \ $f_H^* = "argmin"_(f in H) cal(R)(f)$, $hat(f)_H$:  learned from finite data. \
-#text(0.91em)[
+#text(0.8em)[
 $underbrace(cal(R)(hat(f)_H)-cal(R)(f^*), "excess risk") = underbrace(cal(R)(hat(f)_H) - cal(R)(f^*_H), "estimation error") + underbrace(cal(R)(f^*_H) - cal(R)(f^*), "approximation error")$.
 ]
 
@@ -363,6 +386,8 @@ Beyond the interpolation point, models eventually may level out at a lower gener
 *Implicit bias towards min norm solutions*: Any convergent algorithm with iterates in $"span"{x_1, ..., x_n}$ finds the minimum norm solution.
 
 === A PAC-Bayesian result
+
+$P$ prior distribution over functions before seeing data, $Q$ posterior after training.
 
 *PAC-Bayesian theorem* \
 Bounds generalization gap for stochastic classifiers ($f ~ Q$): 
@@ -384,11 +409,10 @@ Backprop through $theta$ and $sigma$.
 
 Training neural network $f(bold(theta))(x)$ can be approximated by *linearizing* around initialization $bold(theta)_0$ when parameters change slowly.
 
-#v(10pt)
 
 *Linearization $->$ Kernel Regression:* \
 Taylor approximation: $h(bold(beta))(x) = f(bold(theta)_0)(x) + bold(beta) dot.op nabla f(bold(theta)_0)(x), quad bold(beta) = bold(theta) - bold(theta)_0$. \
-With residuals $tilde(y)_i = y_i - f(bold(theta)_0)(x_i)$, training becomes *linear regression* with features $nabla f(bold(theta)_0)(x_i)$.
+With residuals $tilde(y)_i = y_i - f(bold(theta)_0)(x_i)$, training becomes *linear regression* with features $nabla f(bold(theta)_0)(x_i)$: $min norm(tilde(y)_i - beta dot nabla f(theta_0))$
 
 *Neural Tangent Kernel (NTK):* \
 Definition: $k_(bold(theta))(x, x') := nabla f(bold(theta))(x) dot.op nabla f(bold(theta))(x')$.
@@ -451,7 +475,7 @@ bold(Sigma) = mat(bold(Sigma)_(A A), bold(Sigma)_(A B);
 
 *Marginal:* $X_A tilde cal(N)(bold(mu)_A, bold(Sigma)_(A A))$
 
-*Conditional:* $X_B | X_A tilde cal(N)(bold(mu)_(B|A), bold(Sigma)_(B|A))$ where
+*Conditional:* $X_B | X_A tilde cal(N)(bold(mu)_(B|A), bold(Sigma)_(B|A))$
 
 $bold(mu)_(B|A) &= bold(mu)_B + bold(Sigma)_(B A) bold(Sigma)_(A A)^(-1) (X_A - bold(mu)_A) \
 bold(Sigma)_(B|A) &= bold(Sigma)_(B B) - bold(Sigma)_(B A) bold(Sigma)_(A A)^(-1) bold(Sigma)_(A B)$
@@ -465,7 +489,7 @@ $hat(bold(w)) = arg min_bold(w) 1/(2n sigma^2) norm(bold(y) - bold(X) bold(w))^2
 $hat(bold(w)) = (bold(X)^top bold(X))^(-1) bold(X)^top bold(y)$.
 
 #text(0.95em)[
-*MLE interpretation:* $y_i = bold(x)_i^top bold(w) + epsilon_i$, $epsilon_i tilde cal(N)(0, sigma^2)$], \
+*MLE interpretation:* $y_i = bold(x)_i^top bold(w) + epsilon_i$, $epsilon_i tilde cal(N)(0, sigma^2)$], 
 $cal(L)(bold(w)) = log product_(i=1)^n p(y_i | bold(x)_i, bold(w))$, \
 $y_i | bold(x)_i, bold(w) tilde cal(N)(bold(x)_i^top bold(w), sigma^2)$.
 
@@ -473,8 +497,8 @@ $y_i | bold(x)_i, bold(w) tilde cal(N)(bold(x)_i^top bold(w), sigma^2)$.
 *Posterior:* 
 $p(bold(w) | bold(y), bold(X)) = (p(bold(y) | bold(X), bold(w)) p(bold(w))) / (p(bold(y) | bold(X)))$.
 
-#text(0.8em)[ *Predictive distribution:*
-$p(y_(n+1)) = integral p(y_(n+1) | bold(w)) p(bold(w) | bold(y)) dif bold(w)$.]
+*Predictive distribution:*
+$p(y_(n+1)) = integral p(y_(n+1) | bold(w)) p(bold(w) | bold(y)) dif bold(w)$.
 
 $bold(Sigma)_(w w) = I_d$, $bold(Sigma)_(y w) = bold(X), bold(Sigma)_(y y) = bold(X) bold(X)^top + sigma^2 I_n$.
 
@@ -483,8 +507,13 @@ $bold(Sigma)_(w|y) = I_d - bold(X)^top bold(Sigma)_(y y)^(-1) bold(X) = sigma^2 
 
 Same result as ridge: $hat(bold(w)) = (bold(X)^top bold(X) + sigma^2 bold(I)_d)^(-1) bold(X)^top bold(y)$.
 
-Equiv. to GP with linear kernel: $f(dot) tilde cal(G P)(0, k(dot, dot))$: \
+Equiv. to GP with linear kernel: $f(dot) tilde cal(G P)(0, k(dot, dot))$: 
 $k(x, x') = phi.alt(x)^top phi.alt(x')$, $y=f+epsilon$, $f tilde cal(N)(0, K)$, $epsilon tilde cal(N)(0, sigma^2 I_n)$, posterior $p(f|y) = cal(N)(bold(mu)_(f|y), bold(Sigma)_(f|y))$, $bold(mu)_(f|y) = bold(K) (bold(K) + sigma^2 I_n)^(-1) bold(y)$.
+
+#colorbox(color: purple)[
+For $y = f(x) + epsilon$, $f(x) = x^top w$, $epsilon ~ cal(N)(0, sigma^2)$, $p(y | X, w) = cal(N)(X^top w, sigma^2 I)$. If $w ~ cal(N)(0, Sigma)$, $p(w | x, X) = cal(N)(Sigma_"post" 1/sigma^2 X y, Sigma_"post")$, where $Sigma_"post"^(-1) = Sigma^(-1) + 1/sigma^2 X X^top$. Maximizing $log p(w | x, X)$ is same as minimizing least-squares with $ell_2$ penalty $1/2 w^top Sigma^(-1) w$, ridge when $Sigma = lambda^(-1) I$. *Predictive*: $f_* | x_*, y, X = x_*^top w ~ cal(N)(x_*^top mu_"post", x_*^top Sigma_"post" x_*)$. $y_* | x_*, y, X$ adds $sigma^2$. \
+$f = x^top w$ with $w ~cal(N)(0, Sigma)$ is GP w $k(x, x')=x^top Sigma x'$. 
+]
 
 === NNGPs
 
@@ -559,10 +588,10 @@ $bold(Sigma)_(bold(z)|bold(x)) = bold(I) - bold(W)^top (bold(W) bold(W)^top + bo
 
 *Probabilistic PCA:*
 Special case $bold(Sigma) = sigma^2 bold(I)$. Optimal $i$-th column:
-$bold(w)_i = rho_i bold(u)_i, quad rho_i^2 = max{0, lambda_i - sigma^2}$\
+$bold(w)_i = rho_i bold(u)_i, quad rho_i^2 = max{0, lambda_i - sigma^2}$. $W = U_m L_m$\
 where $(lambda_i, bold(u)_i)$ is $i$-th eigenpair of data covariance.
 
-As $sigma arrow 0$: $bold(mu)_(bold(z)|bold(x)) arrow bold(W)^top (bold(x) - bold(mu))$ (standard PCA).
+As $sigma arrow 0$: $bold(mu)_(bold(z)|bold(x)) arrow bold(W)^dagger (bold(x) - bold(mu))$ (standard PCA). If $W$ has orthogonal columns, then $W^dagger = W^top$.
 
 == Variational Autoencoders
 
@@ -572,22 +601,51 @@ $bold(z) in RR^d$ is learned embedding of $bold(x)$. For generation,  $bold(z) t
 *Solution:* Maximize ELBO instead:
 $log p_theta (bold(x)) >= underbrace(EE_(q_phi.alt (bold(z)|bold(x)))[log p_theta (bold(x)|bold(z))], "reconstruction") - underbrace(D_"KL" (q_phi.alt (bold(z)|bold(x)) || p(bold(z))), "regularization")$
 
-- *Reconstruction:* Encode $bold(x) ->^(q_phi.alt) bold(z)$, decode back ($p_theta$)
+- *Reconstruction:* Encode $bold(x) ->^(q_phi.alt) bold(z)$, decode back
 - *KL term:* Keep encoder output close to prior $p(z) tilde cal(N)(bold(0), I)$, ensures  generation using latents
 
 *Encoder* $q_phi.alt (bold(z)|bold(x)) = cal(N)(bold(mu)_phi.alt (bold(x)), "diag"(bold(sigma)_phi.alt^2 (bold(x))))$.
 
 *KL closed form*: 
 $D_"KL" (q_phi.alt (bold(z)|bold(x)) || p(bold(z)))$\
-$ = 1/2 sum_(j=1)^d (sigma_j^2/1 + (mu_j-0)^2/1 - 1 - log (sigma_j^2/1))$.
+$ = 1/2 sum_(j=1)^d (sigma_(phi.alt, j)^2 + mu_(phi.alt, j)^2 - 1 - log sigma_(phi.alt, j)^2)$.
 
-$log p_theta (bold(x)|bold(z)) = -1/(2sigma^2) norm(bold(x) - bold(mu)_theta (bold(z)))^2_2 - d/2 log(2 pi sigma^2)$.
+#colorbox(color:blue)[
+  $"KL"(cal(N)(mu_0, sigma_o^2) || cal(N)(mu_1, sigma_1^2)) = 1/2 (sigma_0^2/sigma_1^2 + (mu_0-mu_1)^2/sigma_1^2 - 1 + log sigma_1^2/sigma_0^2)$
+]
+
+#colorbox(color:purple)[
+  $"KL"(p|| q)) = EE_p [log p(x)/q(x)]$
+]
+
+- *Fwd KL*: $q_1^* = arg min_(q in Q) "KL"(p || q)$
+- *Rev KL*: $q_2^* = arg min_(q in Q) "KL"(q || p)$
+Rev KL: Mode-seeking ($p=0 => q=0$), \
+FwdKL: Mean-seeking ($p!=0 => q!=0$). \ MLE minimizes fwd KL to empirical $cal(D)$.
+
+#text(size:0.9em)[$log p_theta (bold(x)|bold(z)) = -1/(2sigma^2) norm(bold(x) - bold(mu)_theta (bold(z)))^2_2 - d/2 log(2 pi sigma^2)$.]
 
 *Reparameterization trick:* $bold(z) = bold(mu)_phi (bold(x)) + bold(sigma)_phi (bold(x)) dot.o bold(epsilon)$, $bold(epsilon) tilde cal(N)(bold(0), I)$, enables backprop through sampling.
 
 $log p_theta (bold(x)) - "ELBO" = D_"KL" (q_phi.alt (bold(z)|bold(x)) || p_theta (bold(z)|bold(x)))$, *tight when $q_phi.alt = $ true posterior*.
 
 *Monte Carlo estimation*: $E_(q_phi.alt (bold(z)|bold(x)))[log p_theta (bold(x)|bold(z))] approx -1/(2sigma^2 K) sum_(k=1)^K norm(bold(x) - bold(mu)_theta (bold(z_k)))^2_2 - d/2 log(2 pi sigma^2)$.
+
+#colorbox(color:purple)[
+  *Generative Classifiers*
+  Given $y in {0,1}$, $p(y=1)=p(y=0)=1/2$, $p(x | y) = cal(N)(x; mu_y, I_d)$, where $mu_0, mu_1 in RR^d$, $p(y=1 | x) = (p(y=1)  p(x | y=1))/(p(y=1)  p(x | y=1) + p(y=0)  p(x | y=0)) = (1/2 (2 pi)^(-d/2) exp(-1/2 norm(x-mu_1)^2))/(1/2 (2 pi)^(-d/2) exp(-1/2 norm(x-mu_1)^2) + 1/2 (2 pi)^(-d/2) exp(-1/2 norm(x-mu_0)^2)) = 1/(1+ exp(1/2 norm(x-mu_1)^2 - 1/2 norm(x-mu_0)^2)) = 
+  1/(1+ exp(-[(mu_1 - mu_0)^top x + 1/2 (norm(mu_0)^2 - norm(mu_1)^2)])$ equiv to logistic regression where $p(y=1|x)=sigma(w^top x + b)$ with $w = mu_1 - mu_0, b=1/2 (norm(mu_0)^2 - norm(mu_1)^2)$.
+
+  *ELBO for Hierarchical VAEs*: Model $x$ by decoding from latents $z=(z_1, dots, z_L)$. 
+  $p_theta (x,z) = p_theta (x|z_1) product_(i=1)^(L-1) p_theta (z_i|z_(i+1)) p(z_L)$. 
+  *Inference* top-down: $q_phi.alt (z|x) = q_phi.alt (z_L|x) product_(i=1)^(L-1) q_phi.alt (z_i | z_(i+1))$. \
+  *ELBO* for HVAE: $cal(L)(x) = EE_(z|x ~ q_phi.alt) [log (p_theta (x,z))/(q_phi.alt (z|x))] = 
+  EE_(z|x ~ q_phi.alt) [log p_theta (x|z_1) + log (p_theta (z_1|z_2))/(q_phi.alt (z_1|x)) + sum_(i=2)^(L-1) log (p_theta (z_i|z_(i+1)))/(q_phi.alt (z_i|z_(i-1))) + log (p_theta (z_L))/(q_phi.alt (z_L|z_(L-1)))]$.
+  
+  *Change of variables* spherical to 3D euclidian $(x,y,z) mapsto (r cos theta cos phi.alt , r cos theta sin phi.alt , r sin theta)$. Lenghts of the three sides of an infinitesimal cuboid whose diagonally opposite vertices are at $r, theta, phi.alt$ and $(r + d r, theta + d theta, phi.alt + d phi.alt)$ are $(d r, r d theta, r cos theta d phi.alt)$. Volume is $r^2 cos theta d r d theta d phi.alt$. \
+  Determinant of jacobian $|(partial (x, y, z))/(partial (r, theta, phi.alt))| = r^2 cos theta$. \
+  Density on spherical coordinates $p(r, theta, phi.alt)$ $->$ density on Euclidian coordinates is $p(x, y, z) = p(r, theta, phi.alt) |(partial (x, y, z))/(partial (r, theta, phi.alt))|^(-1)$. Infinitesimal probability mass of the cuboid above is equal to the mass of a Euclidian cuboid of size $(d x, d y , d z)$ at $(x, y, z)$.
+]
 
 == Normalizing Flows
 
@@ -630,6 +688,11 @@ $underbrace(EE_(z tilde.op p_z)[log(1 - D_phi (G_theta (z)))], "fake samples")$
 - *Discriminator* maximizes: correctly classify real (high $D$) and fake (low $D$)
 - *Generator* minimizes: fool discriminator (make $D(G(z))$ high)
 
+#colorbox(color:purple)[Common alternative objective for the generator is to maximize $EE_(z ~p(z))[log D(G(z))]]$ instead of minimizinh $EE_(z ~ p(z)) [log(1-D(G(z)))]$ to help mitigate vanishing gradient problem when discriminator becomes to good, i.e. $D(G(z)) -> 0$. \
+For a fixed generator $G$, *optimal discriminator* $D^*$ is given by $D^* (x) = (p_"data" (x))/(p_"data" (x) + p_G (x))$. \
+If *discriminator optimal*, GAN objevtive reduces to $V(D^*, G) = 2 D_"JS" (p_"data" || p_G)-log 4$.
+]
+
 === Theoretical Foundation
 
 Binary classification with $p(y=1) = p(y=0) = 1/2$:
@@ -645,6 +708,10 @@ $ell^* (theta) = EE_(tilde(p)_theta (x,y))[y ln q_theta (x) + (1-y) ln(1 - q_the
 *Jensen-Shannon Divergence:*
 $"JS"(p_r || p_theta) = 1/2 D_"KL" (p_r || p_m) + 1/2 D_"KL" (p_theta || p_m), quad p_m = (p_r + p_theta)/2$. \
 *Bounded:* $0 <= "JS"(p_r || p_theta) <= log 2$.
+
+#colorbox(color:purple, title: "Jensen Inequality", inline:false)[
+  If $phi$ convex: $phi(EE[X]) <= EE[phi(X)]$. If concave, other way around.
+]
 
 === Training
 Alternating SGD (heuristic, may diverge!).
@@ -693,8 +760,9 @@ $log p_theta (x_0)$ intractable, so derive *Variational Lower Bound (VLB)*:
 $-log p_theta (x_0) <=
 cal(L)_"VLB" = EE_q [log (q(x_(1:T) | x_0)) / (p_theta (x_(0:T)))]$.
 *Decomposition into 3 terms:*
+#text(size:0.9em)[
 $cal(L)_"VLB" = underbrace(D_"KL" (q(x_T|x_0) || p(x_T)), L_T) + $\ $sum_(t=2)^T underbrace(EE_(q(x_t|x_0)) [D_"KL" (q(x_(t-1) | x_t, x_0) || p_theta (x_(t-1) | x_t))], L_(t-1))$\
-$-underbrace(EE_(q(x_1|x_0)) [log p_theta (x_0 | x_1)], L_0)$
+$-underbrace(EE_(q(x_1|x_0)) [log p_theta (x_0 | x_1)], L_0)$]
 - $L_T$: Is $q(x_T | x_0) approx cal(N)(0, I)$? Not optimized.
 - $L_(t-1)$: Match learned reverse to true reverse
 - $L_0$: Reconstruction term
@@ -732,8 +800,9 @@ $cal(L)_"simple" = EE_(t tilde.op [1,T], x_0, epsilon_0) [||epsilon_0 - epsilon_
 1. Sample $x_T tilde.op cal(N)(0, I)$
 2. For $t = T, ..., 1$: \
 #v(-5pt)
+#text(size:0.7em)[
 $z tilde.op cal(N)(0, I)$ if $t > 1$, else $z = 0$ \
-$x_(t-1) = 1/sqrt(alpha_t) (x_t - (1-alpha_t)/sqrt(1-overline(alpha)_t) epsilon_theta (x_t, t)) + sigma_t z$ \
+$x_(t-1) = 1/sqrt(alpha_t) (x_t - (1-alpha_t)/sqrt(1-overline(alpha)_t) epsilon_theta (x_t, t)) + sigma_t z$] \
 Return $x_0$
   ]],
 )
@@ -754,12 +823,17 @@ run diffusion in *compressed latent space* instead of pixel space.
 
 *Short Connections* in DNs: Add less deep paths to a very deep network. *Residual* connections: shortcut and add back in. *Skip* connections: concatenate.
 
+#colorbox(color:purple)[
+  For $y_1 = alpha f(x, Theta_1) + x$, $x in RR^d, y_i in RR^d, Theta_i in RR^(d times d)$ and $y_(i>=2)=alpha f(y_(i-1), Theta_i) + y_(i-1)$, $l=L(y_n)$
+  it holds that $(partial y_k)/(partial y_(k-1)) = alpha (partial f(y_(k-1), Theta_k))/(partial y_(k-1)) + I_d$ and $(partial y_k)/(partial Theta_k) = alpha (partial f(y_(k-1), Theta_k))/(partial Theta_k)$. By applying the chain rule we have $(partial l)/(partial Theta_k) = (partial L(y_n))/(partial y_n) (partial y_n)/(partial y_(n-1)) ... (partial y_(k+1))/(partial y_k) (alpha partial f(y_(k-1), Theta_k))/(partial Theta_k)$. Set $alpha^2 = a/n$ for $a>0$ s.t. $lim_(n -> infinity)EE norm(y)^2 < infinity$.
+]
+
 == Weight Decay & Early Stopping
 
 *L2 regularization* \
 $cal(R)_Omega (theta; cal(S)) = cal(R)(theta; cal(S)) + Omega (theta)$, $Omega_mu (theta) = mu/2 norm(theta)^2$, $mu >= 0$. \
 Only penalize weights, not biases.
-*GD upd w/ WD:* \
+*GD upd w/ WD:*
 $Delta theta = -eta nabla cal(R)(theta) - eta nabla Omega_mu (theta) = -eta nabla cal(R)(theta) - eta mu theta$.
 
 Geometric interpration (local quadratic approx):
@@ -772,6 +846,16 @@ Adaptively shrinks based on loss geometry, preserves important dirs, removes unn
 
 *Early stopping*: Rather than training to convergence, stop when validation performance plateaus. Analysis shows that this is approximately equivalent to L2 regularization. GD trajectories can be approximated as
 $theta(k) = [I- (I-eta Lambda)^k] theta^*$. For small step sizes, behaves like weight decay when $k=1/(eta mu)$.
+
+#colorbox(color: purple)[
+  $L^1$ regularized second-order approximation of an arbitrary loss function around optimal $theta^*$ is $R_(L^1)(theta) approx R(theta^*) + 1/2 (theta - theta^*)^top H (theta - theta^*) + lambda norm(theta)_1$.
+  Assuming $H = "diag"(h_1, ... , h_d)$, we get $R_(L^1)(theta) approx sum_(i=1)^d [h_i/2 (theta_i - theta_i^*)^2 + lambda |theta_i| ] + "const"$ so we need to minize $f(a) = 1/2 (a-b)^2 + beta |a|$ and this gives $a^* = "sgn"(b) max {0, |b| - beta}$, so $theta_i = "sgn"(theta_i^*) max {0, |theta_i^*| - lambda / h_i}$. For $L^2$ regularization we get $theta_i = h_i/(h_i + lambda) theta_i^*$. *Connecting $L^2$ w early stopping*: 
+  $R(w) approx R(w^*) + 1/2 (w-w^*)^top H (w-w^*)$. $nabla R(w) = H (w-w^*)$.
+  GD update: $w^t = w^(t-1) - eta H(w^(t-1)-w^*)$ gives
+  $w^t - w^*= (I_d - eta H) (w^(t-1)-w^*)$. Using $H=Q Lambda Q^top$: $Q^top (w^t - w^*) = (I_d - eta Lambda) Q^top (w^(t-1) - w^*)$. If $w^0 = 0$, $Q^top (w^t - w^*) = (I_d - eta Lambda)^t Q^top (0 - w^*) => Q^top w^t = [I_d - (I_d - eta Lambda)^t]Q^top w^*$. Optimal $w$ under $L^2$ reg gives 
+  $Q^top w = [I_d - lambda (Lambda + lambda I_d)^(-1)] Q^top w^*$. Matching both gives $t approx 1/(eta lambda)$.
+  *Weight normalization* is like BatchNorm,with the covariance matrix replaced by the identity matrix.
+]
 
 == Ensemble Methods
 
@@ -814,6 +898,16 @@ $=>$ Simple RNNs cannot learn long dependencies.
 *Deep RNNs* stack layers vertically: \
 $z^(t,ell) = phi(W_ell z^(t-1,ell) + U_ell z^(t,ell-1))$
 where $z^(t,0) = x_t$.
+
+#colorbox(color: purple)[
+  For RNN with $z_(t+1) = phi (U z_t + V x_(t+1))$, $L= sum_(t=1)^T ell (hat(y)_t, y_t)$, where $hat(y)_t$ depends on $z_t$. Then
+  $(partial L)/(partial U) = sum_(t=1)^T (partial L)/(partial z_t) dot (phi_t^' dot z_t)$, \
+  $(partial L)/(partial V) = sum_(t=1)^T (partial L)/(partial z_t) dot (phi_t^' dot x_(t+1))$. \
+  *Weight Sharing in RNNs (LSTM):*  \
+  $(partial L)/(partial W) = sum_(t=1)^T (partial L)/(partial W_t)$. \
+*Proof idea:* Introduce dummy parameters $tilde(W)_i = f(W)$ for each time step. By chain rule: $(diff L)/(diff W) = sum_i (diff L)/(diff tilde(W)_i) (diff tilde(W)_i)/(diff W)$. With constraint $tilde(W)_i = W$, we have $(diff tilde(W)_i)/(diff W) = I$, giving the sum. \
+Initialization of bias in RNNs: Use 1.
+]
 
 
 == Long Short-Term Memory (LSTM)
@@ -865,7 +959,14 @@ now model conditions on its own previous predictions → more coherent gen.
 
 *Professor Forcing:* Train two networks (teacher-forced + free-running), discriminator matches hidden states → improved generalization.
 
+*Exposure bias*: Model relies on itself where inputs come from the previous output because of the non-availability of the ground truth.
+
 *Seq2Seq*: Input and output sequences have different lengths: Use encoder-decoder framework.
+
+
+#colorbox(color: purple)[
+  Gradients in bi-directional RNNs are computed by making a forward and backward run, then at timestep $t$ we combine (concatenate/add) and continue with the backpropagation. This happens at every bidirectional layer.
+]
 
 = Attention and Transformers
 
