@@ -51,6 +51,11 @@ $w_(i j) = 1/n sum_(t=1)^s x_i^t x_j^t$, $w_(i i) = 0$. For inference, update $X
 Capacity for random, uncorrelated patterns: $s_"max" approx 0.138 n$. Requiring pattern to be retrieved with high probability: $s <= n/(2 log_2 n)$.
 ]
 
+#colorbox(color:purple)[
+  If $X="diag"(1, ...,1)$, no reconstruction happens. \
+  Under async update step, any Hopfield network is guaranteed to converge.
+]
+
 
 = Feedforward Networks
 
@@ -141,7 +146,9 @@ $delta^ell = (partial cal(L))/(partial x^ell) dot.circle phi'(W^ell x^(ell-1) + 
 
 #colorbox(color: purple)[
 $(partial L) / (partial x) = (partial L) / (partial z) (partial z) / (partial x)$. For $x in RR^n$ different $z$: 
-$(partial (W x))/(partial x) = W$, element wise $f$ gives : $(partial f(x))/(partial x) = "diag"(f'(x))$, $(partial norm(hat(y)-y)^2)/(partial hat(y)) = 2 (hat(y) - y)^top$, $(partial L)/(partial hat(y)) (partial (W h))/(partial W) = h dot (partial L) / (partial hat(y))$.]
+$(partial (W x))/(partial x) = W$, element wise $f$ gives : $(partial f(x))/(partial x) = "diag"(f'(x))$, $(partial norm(hat(y)-y)^2)/(partial hat(y)) = 2 (hat(y) - y)^top$, $(partial L)/(partial hat(y)) (partial (W h))/(partial W) = h dot (partial L) / (partial hat(y))$.
+
+$d/(d x_j) "softmax"(x)_i = "sm"(x)_i (delta_(i j) - "sm"(x)_j)$]
 
 == Gradient Descent
 
@@ -912,9 +919,9 @@ Initialization of bias in RNNs: Use 1.
 
 == Long Short-Term Memory (LSTM)
 - $C_t$: cell state (internal memory, protected highway)
-- $h_t$: hidden state (external output, filtered view)
-$C_t = sigma(F tilde(x)^t) dot.o C_(t-1) + sigma(G tilde(x)^t) dot.o tanh(V tilde(x)^t)$, \
-$z_t = sigma(H tilde(x)^t) dot.o tanh(C_t)$, where $tilde(x)^t = [x_t, z_(t-1)]$.
+- $z_t$: hidden state (external output, filtered view)
+$C_t = underbrace(sigma(F tilde(x)^t) dot.o C_(t-1),"forget") + underbrace(sigma(G tilde(x)^t) dot.o tanh(V tilde(x)^t),"input")$, \
+$z_t = underbrace(sigma(H tilde(x)^t) dot.o tanh(C_t),"output")$, where $tilde(x)^t = [x_t, z_(t-1)]$.
 
 
 
