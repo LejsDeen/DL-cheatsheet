@@ -156,7 +156,8 @@ $d/(d x_j) "softmax"(x)_i = "sm"(x)_i (delta_(i j) - "sm"(x)_j)$]
 
 *Gradient flow ODE* $(dif x) / (dif t) = -nabla f(x)$ gives ideal trajectory to be approximated by gradient descent.
 
-*Newton's method* gives optimal step for quadratic model: $Delta x = - [nabla^2 f(x)]^(-1) nabla f(x)$.
+*Newton's method* gives optimal step for quadratic model: $Delta x = - [nabla^2 f(x)]^(-1) nabla f(x)$. \
+$nabla^2_x [x^top A x + b^top x + c] = A + A^top $
 
 *Optimal LR for Convex Quadratics* \
 For $f(x) = 1/2 x^top Q x$, $eta^star = 2/(lambda_max (Q) + lambda_min (Q))$. Stability requires $eta <= 2/(lambda_max (Q))$. Quadratic approx. of $f$: $f(x + Delta x) approx f(x) + nabla f(x)^top Delta x + 1/2 Delta x^top nabla^2 f(x) Delta x$. Condition number of $Q$: $lambda_"max"/lambda_"min"$
