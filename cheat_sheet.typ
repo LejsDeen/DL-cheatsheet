@@ -163,7 +163,7 @@ $nabla^2_x [x^top A x + b^top x + c] = A + A^top $
 For $f(x) = 1/2 x^top Q x$, $eta^star = 2/(lambda_max (Q) + lambda_min (Q))$. Stability requires $eta <= 2/(lambda_max (Q))$. Quadratic approx. of $f$: $f(x + Delta x) approx f(x) + nabla f(x)^top Delta x + 1/2 Delta x^top nabla^2 f(x) Delta x$. Condition number of $Q$: $lambda_"max"/lambda_"min"$
 
 *L-smooth:* $norm(nabla f(x) - nabla f(y)) <= L norm(x - y)$. \
-Equivalently (if $f$ twice differentiable): \ 
+Equivalently (if $f$ twice diff) (for $L=0 =>$): \ 
 $f(y) <= f(x) + nabla f(x)^top (y-x) + L/2 norm(y-x)^2$. \
 Implies $lambda_i (nabla^2 f(x)) <= L$ for all EVs $lambda_i$ of $nabla^2 f(x)$. \
 *Convexity* ($lambda in [0,1]$): \ $f(lambda w + (1 - lambda) w') <= lambda f(w) + (1 - lambda) f(w')$. \
@@ -1020,6 +1020,30 @@ Has bidirectional encoder, and task-specific heads. Can do FT for various tasks.
 
 *Vision Transformers* split images into patches, add pos embeddings and a [CLS] token, then process with a standard transformer encoder.
 
+#colorbox(color:purple)[
+#text(size:0.8em)[
+*Complexity metrics for different layer types in terms of input sequence length $n$.*
+
+*Key Metrics:*
+- *Complexity per Layer*: Total computational operations per layer
+- *Sequential Operations*: Number of operations needed to connect any two input positions
+- *Maximum Path Length*: Longest path between any two input positions in the network
+
+*Self-Attention:*
+- Complexity per Layer: $cal(O)(n^2 d)$ — quadratic in sequence length due to all-pairs attention
+- Sequential Operations: $cal(O)(1)$ — fully parallelizable
+- Maximum Path Length: $cal(O)(1)$ — direct connections between all positions
+
+*RNN:*
+- Complexity per Layer: $cal(O)(n d^2)$ — linear in sequence length
+- Sequential Operations: $cal(O)(n)$ — must process sequentially
+- Maximum Path Length: $cal(O)(n)$ — information flows through entire sequence
+
+*Trade-off:* Self-attention enables parallel processing and direct long-range connections but has quadratic complexity, while RNNs have linear complexity but require sequential processing.
+]]
+
+
+#text(size:0.7em)[
 = Ethics
 
 *Adversarial examples* (given $f(x) = y$ correctly):\
@@ -1032,29 +1056,20 @@ Has bidirectional encoder, and task-specific heads. Can do FT for various tasks.
 *Correct*: $y (w^top x + b) > 0$. \
 Adv. flips when $y w^top delta <= -y(w^top x + b)$ cross hyperplane.
 *L2 optimal*: $delta^* = (-w^top x + b) / norm(w)_2^2 w$, $norm(delta^*)_2 = (|w^top x + b|) / norm(w)_2$. \
-$L_infinity$ optimal: $delta = -epsilon "sign"(y w)$.
-
+$L_infinity$ optimal: $delta = -epsilon "sign"(y w)$. \
 *Multiclass*: $f_k (x) = w_k^top x + b_k$, use $"argmax"_k f_k (x)$. \
 #text(0.96em)[
 *Margin* to class $j$: $m_j (x) = (w_y - w_j)^top x + (b_y - b_j)$.] \
 $f_y (x) = f_j (x) <=> m_j (x) = 0$. 
 *Correct* if $f_y (x) > f_j (x) space forall j != y$, *adversarial* if $exists j != y$ s.t. $f_y (x + delta) < f_j (x + delta)$.
-Distance to boundary: $(m_j (x)) / norm(w_y - w_j)_2$.
-
-Adversarial attacks for *NNs*: Approximate boundary by $f(x + delta) approx f(x) + nabla f(x)^top delta$. *FGSM* is a one-step $L_infinity$ attack: $delta = epsilon "sign"(nabla_x L(f(x), y))$. *PGD* is multi-step $delta_{t+1} = "Proj"_(norm(delta) <= epsilon) (delta_t + alpha "sign"(g_t))$.
-
+Distance to boundary: $(m_j (x)) / norm(w_y - w_j)_2$. \
+Adversarial attacks for *NNs*: Approximate boundary by $f(x + delta) approx f(x) + nabla f(x)^top delta$. *FGSM* is a one-step $L_infinity$ attack: $delta = epsilon "sign"(nabla_x L(f(x), y))$. *PGD* is multi-step $delta_{t+1} = "Proj"_(norm(delta) <= epsilon) (delta_t + alpha "sign"(g_t))$. \
 *Distributionally Robust Optimization*: \
 $"min"_f sup_(Q in U(P)) E_Q [L(f(x))]$, where $U$ means close.
-Can use upper bound on Wasserstein distance e.g.
-
-*Robust training* $min_f EE[max_(delta in S) L(f(x + delta), y)]$.
-
-Adversarial training can be viewed as robustness to distribution shift measured by Wasserstein distance.
-
-*Interpretability*: Local - explain pred for specific $x$, Global - explain model behaviour on avg over data.
-
-*Local*: Ceteris paribus (vary $x_j$, fix $x_(-j)$), Sensitivity ($diff_(x_j) f(x) $), missing info ($f(x) - EE[f(X) | X_(-j) = x_(-j)]$). *Global*: Mutual info ($I(X_j ; Y [ | X_(-j)])$), Predictive util (train $f$ w/ and w/o $x_j$). For log-loss predictive util $approx$ conditional mutual information.
-
-SHAP attributes predictions, while SAGE attributes risk reduction.
-
-$A$ protected attribute, $Y$ target outcome, $hat(Y)$ prediction. Demographic Partiy: $hat(Y) bot A$; Equalized Odds: $hat(Y) bot A | Y$, Equality of Opportunity: $hat(Y) bot A | Y=1$.
+Can use upper bound on Wasserstein distance e.g. \
+*Robust training* $min_f EE[max_(delta in S) L(f(x + delta), y)]$. \
+Adversarial training can be viewed as robustness to distribution shift measured by Wasserstein distance. \
+*Interpretability*: Local - explain pred for specific $x$, Global - explain model behaviour on avg over data. \
+*Local*: Ceteris paribus (vary $x_j$, fix $x_(-j)$), Sensitivity ($diff_(x_j) f(x) $), missing info ($f(x) - EE[f(X) | X_(-j) = x_(-j)]$). *Global*: Mutual info ($I(X_j ; Y [ | X_(-j)])$), Predictive util (train $f$ w/ and w/o $x_j$). For log-loss predictive util $approx$ conditional mutual information. \
+SHAP attributes predictions, while SAGE attributes risk reduction. \
+$A$ protected attribute, $Y$ target outcome, $hat(Y)$ prediction. Demographic Partiy: $hat(Y) bot A$; Equalized Odds: $hat(Y) bot A | Y$, Equality of Opportunity: $hat(Y) bot A | Y=1$.]
