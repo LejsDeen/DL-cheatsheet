@@ -974,6 +974,8 @@ now model conditions on its own previous predictions → more coherent gen.
 
 #colorbox(color: purple)[
   Gradients in bi-directional RNNs are computed by making a forward and backward run, then at timestep $t$ we combine (concatenate/add) and continue with the backpropagation. This happens at every bidirectional layer.
+
+  To initialize points uniformly on the unit ring in $CC$ between circles of radii $r_2 > r_1$, sample from $exp(1/2 log(u_1 (r_2^2 - r_1^2)+ r_1^2 ) + i 2 pi u_2 )$ w $u_1, u_2 ~ cal(U)(0,1)$.
 ]
 
 = Attention and Transformers
