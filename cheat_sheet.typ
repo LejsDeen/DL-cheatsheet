@@ -1042,6 +1042,8 @@ Has bidirectional encoder, and task-specific heads. Can do FT for various tasks.
 - Maximum Path Length: $cal(O)(n)$ — information flows through entire sequence
 
 *Trade-off:* Self-attention enables parallel processing and direct long-range connections but has quadratic complexity, while RNNs have linear complexity but require sequential processing.
+
+There is *Linear Attention*, where compute and memory scales O(1) with incrementing sequence length.
 ]]
 
 
