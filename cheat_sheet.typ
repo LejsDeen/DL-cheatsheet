@@ -901,8 +901,7 @@ Multi-task Learning. Self-supervised Learning: Create free supervision from data
 = Recurrent Neural Networks
 
 *Evolution:* $z_t = F[theta](z_(t-1), x_t)$, with $z_0 = 0$. \
-Optional output: $y_t = G[theta](z_t)$.
-
+Optional output: $y_t = G[theta](z_t)$. \
 *Simple RNN:* $z_t = phi.alt(W z_(t-1) + U x_t)$ where $W in RR^(m times m)$, $U in RR^(m times n)$
 
 *Backpropagation Through Time* (param sharing):
@@ -915,7 +914,8 @@ $nabla_(x_t) cal(R) = [product_(r=t+1)^s W^top S(z^r)] dot.c J_G dot.c nabla_y c
 #text(0.99em)[
 *Spectral analysis:* $norm(product W^top S(z^r))_2 <= [sigma_(max)(W)]^(s-t)$
 ]
-*Root cause:* Repeated matmul through time.
+*Root cause:* Repeated matmul through time. 
+If $sigma_"max"(W)<1$, vanishing gradients; if $sigma_"max"(W)>1$, exploding gradients.
 
 $=>$ Simple RNNs cannot learn long dependencies.
 
@@ -940,6 +940,13 @@ Initialization of bias in RNNs: Use 1.
 - $L = sum_(t=1)^T L_t$
 $(partial L)/(partial theta) = sum_(t=1)^T (partial L_t)/(partial hat(y)_t)  (partial hat(y)_t)/(partial h_t) sum_(i=1)^t (product_(j=t)^(i+1)(partial h_j)/(partial h_(j-1))) (partial h_i)/(partial theta)$ ,
 $(partial h_j)/(partial h_(j-1)) = (partial h_j)/(partial a_j) (partial a_j)/(partial h_(j-1))$, $(partial h_i)/(partial theta) = (partial h_i)/(partial a_i) (partial a_i)/(partial theta)$
+ 
+*Other example for BPTT:*
+$h_t = f_H (x_t, h_(t-1); theta)$ \
+If $L = sum_(i=t)^T L_t$, where $L_t = L(h_t)$, one gets:
+
+$(partial L_t)/(partial theta) = (partial L_t)/(partial h_t) sum_(k=1)^t ((partial h_t)/(partial h_k) dot (partial h_k)/(partial theta))$, where \
+$(partial h_t)/(partial h_k) = product_(i=k+1)^t (partial h_i)/(partial h_(i-1))$.
 ]
 
 
@@ -949,15 +956,25 @@ $(partial h_j)/(partial h_(j-1)) = (partial h_j)/(partial a_j) (partial a_j)/(pa
 $C_t = underbrace(sigma(F tilde(x)^t) dot.o C_(t-1),"forget") + underbrace(sigma(G tilde(x)^t) dot.o tanh(V tilde(x)^t),"input")$, \
 $z_t = underbrace(sigma(H tilde(x)^t) dot.o tanh(C_t),"output")$, where $tilde(x)^t = [x_t, z_(t-1)]$.
 
+Keeping or forgetting stored content? \
+$f_t = sigma(W_f dot [h_(t-1),x_t] + b_f)$ \
+Prep new input info to be added to the memory. \
+$i_t = sigma(W_i dot [h_(t-1), x_t] + b_i)$ \
+$tilde(C)_t = tanh(W_C dot [h_(t-1), x_t] + b_C)$ \
+Combine stored and new information \
+$C_t = f_t dot.o C_(t-1) + i_t dot.o tilde(C)_t$ (long term memory) \
+Compute output selectively \
+$o_t = sigma(W_o [h_(t-1), x_t] + b)$ \
+$h_t = o_t dot.o tanh(C_t)$ (short term memory + outp)
 
 
 == Gated Recurrent Unit (GRU)
 
+Simplified LSTMs (3 weight mats instead of 5). \
 *Single state* $z_t$. *Input:* $tilde(x)^t = [x_t, z_(t-1)]$. \
 $u_t = sigma(U tilde(x)^t), quad r_t = sigma(R tilde(x)^t)$, \
-#text(0.99em)[
-$z_t = u_t dot.o z_(t-1) + (1 - u_t) dot.o tanh(W [r_t dot.o z_(t-1), x_t])$
-]
+$tilde(z)_t = tanh(W [r_t dot.o z_(t-1), x_t])$ \
+$z_t = (1 - u_t) dot.o z_(t-1) + u_t dot.o tilde(z)_t$
 
 Often comparable to LSTM with fewer resources.
 Gating creates identity paths $->$ better gradient flow.
@@ -1035,6 +1052,7 @@ $W_V in RR^(d_"model" times d_v)$,
 $Q, K in RR^(T times d_k)$,
 $V in RR^(T times d_v)$.
 
+#text(size:0.8em)[
 
 *Positional encodings* necessary since no use of recurrence. Can use predefined approaches, or learned.
 
@@ -1046,9 +1064,9 @@ Self attention used in encoder, masked self-attention in decoder. Can also add c
 Has bidirectional encoder, and task-specific heads. Can do FT for various tasks.
 
 *Vision Transformers* split images into patches, add pos embeddings and a [CLS] token, then process with a standard transformer encoder.
-
+]
 #colorbox(color:purple)[
-#text(size:0.8em)[
+#text(size:0.7em)[
 *Complexity metrics for different layer types in terms of input sequence length $n$.*
 
 *Key Metrics:*
@@ -1071,8 +1089,10 @@ Has bidirectional encoder, and task-specific heads. Can do FT for various tasks.
 There is *Linear Attention*, where compute and memory scales O(1) with incrementing sequence length.
 ]]
 
+#image("attention.png", height:20em)
 
-#text(size:0.7em)[
+
+#text(size:0.6em)[
 = Ethics
 
 *Adversarial examples* (given $f(x) = y$ correctly):\
@@ -1102,3 +1122,44 @@ Adversarial training can be viewed as robustness to distribution shift measured 
 *Local*: Ceteris paribus (vary $x_j$, fix $x_(-j)$), Sensitivity ($diff_(x_j) f(x) $), missing info ($f(x) - EE[f(X) | X_(-j) = x_(-j)]$). *Global*: Mutual info ($I(X_j ; Y [ | X_(-j)])$), Predictive util (train $f$ w/ and w/o $x_j$). For log-loss predictive util $approx$ conditional mutual information. \
 SHAP attributes predictions, while SAGE attributes risk reduction. \
 $A$ protected attribute, $Y$ target outcome, $hat(Y)$ prediction. Demographic Partiy: $hat(Y) bot A$; Equalized Odds: $hat(Y) bot A | Y$, Equality of Opportunity: $hat(Y) bot A | Y=1$.]
+
+For $W in RR^(n times d)$, $W_(i, j) ~ cal(N)(0,1)$:
+$E[W] = 0$, $E[W W^top] = d I_n$, $E[W^top W] = n I_d$;
+$E[W A W^top] = tr(A) I_n$,
+$E[W^top A W] = tr(A) I_d$.
+\
+For $w ~ cal(N)(0, I_n)$:
+$E[w w^top] = I_n$,
+$E[w^top w] = n$,
+$E[w^top A w] = tr(A)$.
+#text(size:0.6em)[
+```python
+def forward(self, x):
+  B, T, C = x.size() # batch size, seqLen, EmbeddingSize
+  qkv = self.c_attn(x) # (B, T, 3*C)
+  q, k, v = qkv.split(self.n_embd, dim=2)
+  q = q.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) # (B, nh, T, hs)
+  k = k.view(B, T, self.n_head, C // self.n_head).transpose(1, 2)
+  v = v.view(B, T, self.n_head, C // self.n_head).transpose(1, 2) 
+  att = (q @ k.transpose(-1, -2)) # (B, nh, T, T)
+  att *= 1.0 / math.sqrt(C // self.n_head)
+  att = att.masked_fill(self.bias[:,:,:T,:T] == 0, float("-inf"))
+  att = F.softmax(att, dim=-1)
+  y = att @ v # (B, nh, T, hs)
+  y = y.transpose(1, 2).reshape(B, T, C)
+  y = self.c_proj(y)
+  return y
+
+# torch.cat concatenates along an existing dimension
+# torch.stack creates a new dimension
+import torch
+a = torch.tensor([1, 2, 3])
+b = torch.tensor([4, 5, 6])
+
+# cat: joins along existing dim
+torch.cat([a, b])  # shape (6,) → [1, 2, 3, 4, 5, 6]
+
+# stack: creates new dim
+torch.stack([a, b])  # shape (2, 3) → [[1, 2, 3],
+                     #                  [4, 5, 6]]
+```]
